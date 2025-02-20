@@ -17,4 +17,18 @@ public class PlayerSpawn : MonoBehaviour
             Debug.LogError("SpawnPoint atanmadý! Lütfen bir SpawnPoint nesnesi oluþtur.");
         }
     }
+
+    public void Respawn()
+    {
+        if (spawnPoint != null)
+        {
+            transform.position = spawnPoint.position; // Karakteri tekrar spawn noktasýna ýþýnla
+        }
+        else
+        {
+            Debug.LogError("SpawnPoint atanmadý! Respawn iþlemi baþarýsýz.");
+        }
+    }
+
+
 }
