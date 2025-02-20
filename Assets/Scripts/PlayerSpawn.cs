@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerSpawn : MonoBehaviour
 {
@@ -28,6 +29,8 @@ public class PlayerSpawn : MonoBehaviour
         {
             Debug.LogError("SpawnPoint atanmadý! Respawn iþlemi baþarýsýz.");
         }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerDeath : MonoBehaviour
 {
@@ -35,5 +36,6 @@ public class PlayerDeath : MonoBehaviour
     {
         transform.position = spawnPoint.position; // Spawn noktasýna ýþýnla
         rb.velocity = Vector2.zero; // Hareketi sýfýrla (takýlmalarý engelle)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
