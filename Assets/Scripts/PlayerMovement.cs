@@ -7,9 +7,9 @@ public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float jumpForce = 7f;
-    public float dashSpeed = 15f; // Dash hýzý
-    public float dashDuration = 0.2f; // Dash süresi
-    public float dashCooldown = 1f; // Dash'in tekrar kullanýlma süresi
+    public float dashSpeed = 15f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 1f;
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -21,22 +21,29 @@ public class PlayerMovement : MonoBehaviour
     public Button leftButton;
     public Button rightButton;
     public Button jumpButton;
-    public Button dashButton; // Dash butonu
+    public Button dashButton;
+
+    public ParticleSystem dashEffect;
+    public Light dashLight; // Dash sýrasýnda parlayan ýþýk efekti
 
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>(); // Rigidbody2D bileþenini al
+        rb = GetComponent<Rigidbody2D>();
 
-        // Butonlara týklanýnca hareketi ayarla
         leftButton.onClick.AddListener(() => moveInput = -1);
         rightButton.onClick.AddListener(() => moveInput = 1);
         jumpButton.onClick.AddListener(Jump);
-        dashButton.onClick.AddListener(() => StartCoroutine(Dash())); // Dash butonu ekledik
+        dashButton.onClick.AddListener(() => StartCoroutine(Dash()));
+
+        if (dashLight != null)
+        {
+            dashLight.enabled = false;
+        }
     }
 
     void Update()
     {
-        if (!isDashing) // Eðer dash atmýyorsak normal hareket
+        if (!isDashing)
         {
             rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
         }
@@ -53,20 +60,59 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Dash()
     {
-        if (!canDash) yield break; // Eðer dash cooldown'daysa, çýk
+        if (!canDash) yield break;
         canDash = false;
         isDashing = true;
 
-        float originalGravity = rb.gravityScale; // Yerçekimini kaydet
-        rb.gravityScale = 0; // Yerçekimini kapat (Dash sýrasýnda havada süzülebilsin)
+        float originalGravity = rb.gravityScale;
+        rb.gravityScale = 0;
 
-        rb.velocity = new Vector2(moveInput * dashSpeed, 0f); // Dash hýzýný uygula
-        yield return new WaitForSeconds(dashDuration); // Dash süresince bekle
+        rb.velocity = new Vector2(moveInput * dashSpeed, 0f);
 
-        rb.gravityScale = originalGravity; // Yerçekimini eski haline getir
-        isDashing = false; // Dash bitti
-        yield return new WaitForSeconds(dashCooldown); // Dash cooldown süresi
-        canDash = true; // Tekrar dash atýlabilir
+        if (dashEffect != null)
+        {
+            var emission = dashEffect.emission;
+            emission.rateOverTime = 80; // Partikül sayýsýný artýrýyoruz
+            dashEffect.Play();
+        }
+
+        if (dashLight != null)
+        {
+            StartCoroutine(DashLightEffect());
+        }
+
+        yield return new WaitForSeconds(dashDuration);
+
+        rb.gravityScale = originalGravity;
+        isDashing = false;
+
+        if (dashEffect != null)
+        {
+            dashEffect.Stop();
+        }
+
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
+    }
+
+    IEnumerator DashLightEffect()
+    {
+        if (dashLight == null) yield break;
+
+        dashLight.enabled = true;
+        dashLight.intensity = 6f;
+
+        float timeElapsed = 0f;
+        float fadeDuration = dashDuration;
+
+        while (timeElapsed < fadeDuration)
+        {
+            dashLight.intensity = Mathf.Lerp(6f, 0f, timeElapsed / fadeDuration);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        dashLight.enabled = false;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
